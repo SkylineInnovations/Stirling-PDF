@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -33,10 +32,11 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import stirling.software.SPDF.config.InstallationPathConfig;
 import stirling.software.SPDF.config.YamlPropertySourceFactory;
+import stirling.software.SPDF.model.exception.UnsupportedProviderException;
 import stirling.software.SPDF.model.provider.GithubProvider;
 import stirling.software.SPDF.model.provider.GoogleProvider;
 import stirling.software.SPDF.model.provider.KeycloakProvider;
-import stirling.software.SPDF.model.provider.UnsupportedProviderException;
+import stirling.software.SPDF.model.provider.Provider;
 
 @Configuration
 @ConfigurationProperties(prefix = "")
@@ -227,9 +227,7 @@ public class ApplicationProperties {
 
             public void setScopes(String scopes) {
                 List<String> scopesList =
-                        Arrays.stream(scopes.split(","))
-                                .map(String::trim)
-                                .toList();
+                        Arrays.stream(scopes.split(",")).map(String::trim).toList();
                 this.scopes.addAll(scopesList);
             }
 
@@ -260,8 +258,11 @@ public class ApplicationProperties {
                         case "google" -> getGoogle();
                         case "github" -> getGithub();
                         case "keycloak" -> getKeycloak();
-                        default -> throw new UnsupportedProviderException(
-                                "Logout from the provider is not supported? Report it at https://github.com/Stirling-Tools/Stirling-PDF/issues");
+                        default ->
+                                throw new UnsupportedProviderException(
+                                        "Logout from the provider "
+                                                + registrationId
+                                                + " is not supported. Report it at https://github.com/Stirling-Tools/Stirling-PDF/issues");
                     };
                 }
             }
