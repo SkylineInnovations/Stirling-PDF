@@ -1,5 +1,7 @@
 package stirling.software.SPDF.model;
 
+import static stirling.software.SPDF.utils.validation.Validator.*;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -49,11 +51,11 @@ public class ApplicationProperties {
     public PropertySource<?> dynamicYamlPropertySource(ConfigurableEnvironment environment)
             throws IOException {
         String configPath = InstallationPathConfig.getSettingsPath();
-        log.debug("Attempting to load settings from: " + configPath);
+        log.debug("Attempting to load settings from: {}", configPath);
 
         File file = new File(configPath);
         if (!file.exists()) {
-            log.error("Warning: Settings file does not exist at: " + configPath);
+            log.error("Warning: Settings file does not exist at: {}", configPath);
         }
 
         Resource resource = new FileSystemResource(configPath);
@@ -66,7 +68,7 @@ public class ApplicationProperties {
                 new YamlPropertySourceFactory().createPropertySource(null, encodedResource);
         environment.getPropertySources().addFirst(propertySource);
 
-        log.debug("Loaded properties: " + propertySource.getSource());
+        log.debug("Loaded properties: {}", propertySource.getSource());
 
         return propertySource;
     }
@@ -135,13 +137,13 @@ public class ApplicationProperties {
                     || loginMethod.equalsIgnoreCase(LoginMethods.ALL.toString()));
         }
 
-        public boolean isOauth2Activ() {
+        public boolean isOauth2Active() {
             return (oauth2 != null
                     && oauth2.getEnabled()
                     && !loginMethod.equalsIgnoreCase(LoginMethods.NORMAL.toString()));
         }
 
-        public boolean isSaml2Activ() {
+        public boolean isSaml2Active() {
             return (saml2 != null
                     && saml2.getEnabled()
                     && !loginMethod.equalsIgnoreCase(LoginMethods.NORMAL.toString()));
@@ -240,11 +242,11 @@ public class ApplicationProperties {
             }
 
             public boolean isSettingsValid() {
-                return isValid(this.getIssuer(), "issuer")
-                        && isValid(this.getClientId(), "clientId")
-                        && isValid(this.getClientSecret(), "clientSecret")
-                        && isValid(this.getScopes(), "scopes")
-                        && isValid(this.getUseAsUsername(), "useAsUsername");
+                return isStringEmpty(this.getIssuer())
+                        && isStringEmpty(this.getClientId())
+                        && isStringEmpty(this.getClientSecret())
+                        && isCollectionEmpty(this.getScopes())
+                        && isStringEmpty(this.getUseAsUsername());
             }
 
             @Data
@@ -262,7 +264,8 @@ public class ApplicationProperties {
                                 throw new UnsupportedProviderException(
                                         "Logout from the provider "
                                                 + registrationId
-                                                + " is not supported. Report it at https://github.com/Stirling-Tools/Stirling-PDF/issues");
+                                                + " is not supported. "
+                                                + "Report it at https://github.com/Stirling-Tools/Stirling-PDF/issues");
                     };
                 }
             }
